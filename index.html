@@ -37,30 +37,32 @@
       .then(data => {
         const ip = data.ip;
         document.getElementById("ip").textContent = `💡 IP: ${ip}`;
-        return fetch(`https://ipwho.is/${ip}`);
-      })
-      .then(res => res.json())
-      .then(info => {
-        const city = info.city || "Không rõ";
-        const country = info.country || "Không rõ";
-        const isp = info.connection?.isp || "Không rõ";
+        
+        // Lấy thông tin vị trí từ ipwho.is
+        fetch(`https://ipwho.is/${ip}`)
+          .then(res => res.json())
+          .then(info => {
+            const city = info.city || "Không rõ";
+            const country = info.country || "Không rõ";
+            const isp = info.connection?.isp || "Không rõ";
 
-        document.getElementById("location").textContent =
-          `📍 ${city}, ${country} - 🛰 ${isp}`;
+            document.getElementById("location").textContent =
+              `📍 ${city}, ${country} - 🛰 ${isp}`;
 
-        // 👉 Gửi log IP về Google Sheet qua Apps Script
-        fetch("https://script.google.com/macros/s/AKfycbzchDMqvHU6Bp86OhyfbK-kApcisX3VxloqhDVnWw2ezbW3oJGmPjf2PtMDx0_pn2gH/exec", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ip: info.ip,
-            city: city,
-            country: country,
-            isp: isp
-          })
-        });
+            // Gửi dữ liệu về Google Sheet
+            fetch("https://script.google.com/macros/s/AKfycbzchDMqvHU6Bp86OhyfbK-kApcisX3VxloqhDVnWw2ezbW3oJGmPjf2PtMDx0_pn2gH/exec", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                ip: ip,
+                city: city,
+                country: country,
+                isp: isp
+              })
+            });
+          });
       })
       .catch(err => {
         document.getElementById("ip").textContent = "Không thể lấy IP.";
