@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Check IP - Đại Ca</title>
+  <title>Check IP - Vị Trí Chi Tiết</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
@@ -12,7 +12,7 @@
       align-items: center;
       justify-content: flex-start;
       min-height: 100vh;
-      background: #f5f5f5;
+      background: #f0f0f0;
       padding-top: 40px;
     }
     .card {
@@ -25,7 +25,7 @@
       max-width: 500px;
       margin-bottom: 20px;
     }
-    h1 { color: #333; }
+    h1 { color: #222; }
     p { font-size: 18px; }
     #map { height: 300px; width: 100%; border-radius: 15px; }
   </style>
@@ -34,10 +34,10 @@
   <div class="card">
     <h1>🔍 IP Thiết Bị Của Bạn</h1>
     <p id="ip">Đang lấy IP...</p>
-    <p id="location">Đang định vị...</p>
+    <p id="location">Đang định vị chi tiết...</p>
   </div>
   <div class="card">
-    <h2>📍 Bản Đồ Vị Trí</h2>
+    <h2>🗺️ Bản Đồ</h2>
     <div id="map">Đang tải bản đồ...</div>
   </div>
 
@@ -48,49 +48,51 @@
       .then(data => {
         const ip = data.ip;
         document.getElementById("ip").textContent = `💡 IP: ${ip}`;
-
         return fetch(`https://ipwho.is/${ip}`);
       })
       .then(res => res.json())
       .then(info => {
-        const city = info.city || "Không rõ";
-        const country = info.country || "Không rõ";
-        const isp = info.connection?.isp || "Không rõ";
+        const ip = info.ip;
+        const region = info.region || "Không rõ khu vực";
+        const city = info.city || "Không rõ thành phố";
+        const country = info.country || "Không rõ quốc gia";
+        const isp = info.connection?.isp || "Không rõ ISP";
         const lat = info.latitude;
         const lon = info.longitude;
 
-        document.getElementById("location").textContent =
-          `📍 ${city}, ${country} - 🛰 ${isp}`;
+        const fullLocation = `${region}, ${city}, ${country}`;
+        document.getElementById("location").textContent = `📍 ${fullLocation} - 🛰 ${isp}`;
 
-        // Gửi log về Google Sheet
+        // Gửi về Google Sheet
         fetch("https://script.google.com/macros/s/AKfycbzchDMqvHU6Bp86OhyfbK-kApcisX3VxloqhDVnWw2ezbW3oJGmPjf2PtMDx0_pn2gH/exec", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            ip: info.ip,
+            ip: ip,
+            region: region,
             city: city,
             country: country,
             isp: isp
           })
         });
 
-        // Hiển thị bản đồ nếu có tọa độ
+        // Hiển thị bản đồ nếu có toạ độ
         if (lat && lon) {
           const map = L.map('map').setView([lat, lon], 10);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
           }).addTo(map);
           L.marker([lat, lon]).addTo(map)
-            .bindPopup(`${city}, ${country}`)
+            .bindPopup(fullLocation)
             .openPopup();
         } else {
-          document.getElementById("map").innerHTML = "Không thể hiển thị bản đồ.";
+          document.getElementById("map").textContent = "Không thể hiển thị bản đồ.";
         }
       })
       .catch(err => {
         document.getElementById("ip").textContent = "Không thể lấy IP.";
         document.getElementById("location").textContent = "Không thể lấy vị trí.";
-        document.getElementById("map").innerHTML = "Không tải được bản đồ.";
+        document.getElementById("map").textContent = "Lỗi khi tải bản đồ.";
         console.error(err);
       });
   </script>
