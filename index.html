@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Check IP - Đại Ca</title>
@@ -28,24 +28,43 @@
   <div class="card">
     <h1>🔍 IP Thiết Bị Của Bạn</h1>
     <p id="ip">Đang lấy IP...</p>
-    <p id="location"></p>
+    <p id="location">Đang định vị...</p>
   </div>
 
   <script>
     fetch("https://api.ipify.org?format=json")
       .then(res => res.json())
       .then(data => {
-        document.getElementById("ip").textContent = `💡 IP: ${data.ip}`;
-
-        return fetch(`https://ipapi.co/${data.ip}/json/`);
+        const ip = data.ip;
+        document.getElementById("ip").textContent = `💡 IP: ${ip}`;
+        return fetch(`https://ipwho.is/${ip}`);
       })
       .then(res => res.json())
       .then(info => {
+        const city = info.city || "Không rõ";
+        const country = info.country || "Không rõ";
+        const isp = info.connection?.isp || "Không rõ";
+
         document.getElementById("location").textContent =
-          `📍 ${info.city}, ${info.region}, ${info.country_name} - 🛰 ${info.org}`;
+          `📍 ${city}, ${country} - 🛰 ${isp}`;
+
+        // 👉 Gửi log IP về Google Sheet qua Apps Script
+        fetch("https://script.google.com/macros/s/AKfycbzchDMqvHU6Bp86OhyfbK-kApcisX3VxloqhDVnWw2ezbW3oJGmPjf2PtMDx0_pn2gH/exec", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ip: info.ip,
+            city: city,
+            country: country,
+            isp: isp
+          })
+        });
       })
       .catch(err => {
         document.getElementById("ip").textContent = "Không thể lấy IP.";
+        document.getElementById("location").textContent = "Không thể lấy vị trí.";
         console.error(err);
       });
   </script>
