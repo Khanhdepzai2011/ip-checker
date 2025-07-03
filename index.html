@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Check IP - Đại Ca</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 { color: #333; }
+    p { font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔍 IP Thiết Bị Của Bạn</h1>
+    <p id="ip">Đang lấy IP...</p>
+    <p id="location"></p>
+  </div>
+
+  <script>
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("ip").textContent = `💡 IP: ${data.ip}`;
+
+        return fetch(`https://ipapi.co/${data.ip}/json/`);
+      })
+      .then(res => res.json())
+      .then(info => {
+        document.getElementById("location").textContent =
+          `📍 ${info.city}, ${info.region}, ${info.country_name} - 🛰 ${info.org}`;
+      })
+      .catch(err => {
+        document.getElementById("ip").textContent = "Không thể lấy IP.";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
