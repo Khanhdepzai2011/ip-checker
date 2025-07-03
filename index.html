@@ -74,18 +74,23 @@
           })
         });
 
-        // Hiển thị bản đồ
-        const map = L.map('map').setView([lat, lon], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-        L.marker([lat, lon]).addTo(map)
-          .bindPopup(`${city}, ${country}`)
-          .openPopup();
+        // Hiển thị bản đồ nếu có tọa độ
+        if (lat && lon) {
+          const map = L.map('map').setView([lat, lon], 10);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+          L.marker([lat, lon]).addTo(map)
+            .bindPopup(`${city}, ${country}`)
+            .openPopup();
+        } else {
+          document.getElementById("map").innerHTML = "Không thể hiển thị bản đồ.";
+        }
       })
       .catch(err => {
         document.getElementById("ip").textContent = "Không thể lấy IP.";
         document.getElementById("location").textContent = "Không thể lấy vị trí.";
+        document.getElementById("map").innerHTML = "Không tải được bản đồ.";
         console.error(err);
       });
   </script>
